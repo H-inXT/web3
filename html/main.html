@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+#da{
+	width:100%;/*设置盒子的宽高，可以根据作为背景的图片宽高来进行设置*/
+	height:100%;
+	background-image:url( '../img/123.jpg' );/*设置盒子的背景图片*/
+	background-repeat:no-repeat;/*设置背景图片不重复*/
+	}
+#test1{
+	margin-top: 100px;
+	}
+     #test2{
+	margin-top: 80px;
+	}
+#tt{
+    margin-left: 700px;
+            text-align:center;
+
+      
+        }
+</style>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+
+		<link href="../css/mui.css" rel="stylesheet" />
+
+		<link rel="stylesheet" href="../css/bootstrap.css">
+<link rel="stylesheet" href="../css/cover.css">
+		<script src="../js/jquery-3.4.1.min.js"></script>
+		<script src="../js/bootstrap.js"></script>
+
+
+	</head>
+
+
+
+
+	<body>
+	
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">当前用户名称：<span id="label_user_name"></span> </h1>
+			<span onclick="javascript:window.location.href='login.html'" class="mui-icon mui-icon-locked mui-pull-right"></span>
+		</header>
+
+	  <div class="site-wrapper" id="da">
+
+		  <div style=" margin-top: 80px;"></div>
+		  <div  class="mui-row">
+
+
+
+			<div class="inner cover" id="main_account" >
+	
+				<h1 class="cover-heading" >管理用户名称及密码</h1>
+				<p class="lead">
+					<p><a class="btn btn-primary btn-lg" role="button" onclick="javascript:window.location.href='./user_manage.html'">
+						用户管理</a>
+				   </p>
+		  </div>
+
+
+
+
+		  <div class="inner cover" id="test2" ></div>
+
+		  <div class="inner cover" id="main_sensor_monitor" >
+	
+
+		  <h1 class="cover-heading" >数据查询及管理</h1>
+
+		  <p class="lead">
+		   <p><a class="btn btn-primary btn-lg" role="button" onclick="javascript:window.location.href='./sensor_monitor.html'">
+							  查询管理</a>
+		  </p>
+		</div>
+
+
+		
+		  <div id="main_sensor_monitor_xiaofeizhe"  class="mui-col-sm-24 mui-col-xs-24">
+		
+				
+				
+					  <h1 class="cover-heading"id="tt">数据查询</h1>
+
+					  <p class="lead">
+					   <p><a class="btn btn-primary btn-lg" role="button"  id="tt" onclick="javascript:window.location.href='./xiaofeizhe_sensor_monitor.html'">
+						数据查询</a>
+					  </p>
+		  
+		  </div>
+		  
+	  </div>
+	</div> 
+	</body>
+	
+	<script src="../js/jquery-3.4.1.min.js"></script>
+	<script>
+		
+		var user_name = localStorage.getItem("user_name");
+		var user_note = localStorage.getItem("user_note");
+		console.log(user_name + "    " + user_note);
+		
+		$("#label_user_name").html(user_name);
+		
+		
+		if(user_note == "管理员")
+		{
+			$("#main_account").show();
+			$("#main_sensor_monitor").show();
+			$("#main_sensor_monitor_xiaofeizhe").hide();
+ 
+		}
+		else{
+			$("#main_account").hide();
+			$("#main_sensor_monitor").hide();
+			$("#main_sensor_monitor_xiaofeizhe").show();
+ 
+		}
+		
+		
+		
+	</script>
+	
+	
+	
+</html>

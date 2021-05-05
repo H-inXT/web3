@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+
+	<style>
+		[v-cloak] {
+				display: none;
+			}
+	</style>
+
+	<head>
+		<meta charset='UTF-8'>
+
+		<title>Responsive Table</title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="../css/table_xiaofeizhe_zhuisu_style.css">
+		<link rel="stylesheet" href="../js/element-ui/theme-chalk/index.css">
+
+
+
+	</head>
+
+	<body>
+
+
+
+
+		<div id="container" class="container">
+
+
+
+
+
+
+
+
+
+			<div>
+		<!-- 		<input type="text" placeholder="查询" @input="search" list="cars" class="search" />
+				<datalist id="cars">
+					<option v-for="item in searchlist" :value="item"></option>
+				</datalist> -->
+				<input type="button" class="add" @click="add" value="提交反馈" />
+				<div style="clear: both;"></div>
+			</div>
+
+
+
+
+
+
+			<table>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>卡号</th>
+						<th>记录</th>
+						<th>时间</th>
+		 
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-cloak v-for="(item, index) of slist">
+						<!-- <td>{{ index + 1 }}</td> -->
+						<td>{{ item.id}}</td>
+						<td>{{ item.card }}</td>
+						<td>{{ item.jilu }}</td>
+						<td>{{ item.time}}</td>
+				 
+					</tr>
+
+
+
+
+				</tbody>
+			</table>
+			
+
+
+
+
+			<model :list="selectedlist" :isactive="isActive" v-cloak @change="changeOverlay" @modify="modify"></model>
+
+
+
+		</div>
+
+
+
+
+
+	</body>
+
+
+
+
+	<script src="../js/jquery-3.4.1.min.js"></script>
+	<script src="../js/project_config.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script src="../js/element-ui/index.js"></script>
+
+
+
+
+	<script>
+		var globalvar_card;
+		var globalvar_card_last;
+		
+		
+		var temp_card = localStorage.getItem("card");
+		globalvar_card = temp_card;
+
+
+		function shuaxin() {
+
+			var l_wendu = localStorage.getItem("l_wendu1");
+			globalvar_gaowenyuzhi = parseInt(l_wendu);
+
+			if (globalvar_gaowenyuzhi_last != globalvar_gaowenyuzhi) {
+				app.refresh();
+
+				globalvar_gaowenyuzhi_last = globalvar_gaowenyuzhi;
+			}
+
+		}
+
+		timer_request = setInterval(this.shuaxin, 2000);
+
+
+
+		function shuaxin() {
+
+
+
+
+			var l_wendu = localStorage.getItem("l_wendu1");
+			globalvar_gaowenyuzhi = parseInt(l_wendu);
+
+			if (globalvar_gaowenyuzhi_last != globalvar_gaowenyuzhi) {
+				app.refresh();
+
+				globalvar_gaowenyuzhi_last = globalvar_gaowenyuzhi;
+			}
+
+		}
+
+		timer_request = setInterval(this.shuaxin, 2000);
+
+
+
+
+
+
+		function request_option(option, data, callback) {
+
+
+			var delete_url = cfg_zhuisu_monitor_url;
+
+			delete_url = delete_url + "?option=" + option + "&data=" + JSON.stringify(data);
+
+			console.log(delete_url);
+
+
+			$.ajax({
+				type: 'get',
+				dataType: "json",
+				url: delete_url,
+				success: function(data) {
+					callback(data);
+				},
+			});
+		}
+
+
+
+
+
+
+		Vue.component('model', {
+			props: ['list', 'isactive'],
+			template: `<div class="overlay" v-show="isactive">
+				<div class="con">
+				
+					<h4 style="text-align: center">新增 | 修改</h4>
+		
+					<div class="content" >
+					
+ 
+	
+						
+						<div style="margin:10px auto;">
+							<div class="item_name">卡号：</div>
+							<input class="item_value" type="text" readonly="true" v-model="modifylist.card" >
+							<div style="clear: both;"></div>
+						</div>
+						
+						<div style="margin:10px auto;">
+							<div class="item_name">反馈:</div>
+							<input class="item_value" type="text" v-model="modifylist.jilu">
+							<div style="clear: both;"></div>
+						</div>
+						<div style="margin: 20px 30px;">
+							<input class="item_name" style="font-size: 18px;text-align: center;"  type="button" @click="changeActive" value="取消">
+							<input class="item_value"  style="font-size: 18px;text-align: center;"  type="button" @click="modify" value="保存">
+						</div>
+
+					</div>
+				</div>
+			</div>`,
+			computed: {
+				modifylist() {
+					return JSON.parse(JSON.stringify(this.list));
+				}
+			},
+			methods: {
+				changeActive() {
+					this.$emit('change');
+				},
+				modify() {
+					this.$emit('modify', this.modifylist);
+				}
+			}
+		});
+
+
+
+		var app = new Vue({
+			el: '#container',
+			data: {
+				isActive: false, // 是否显示弹窗
+				isAddNew: true, //是否是添加数据
+				selected: -1, // 选择了哪条记录
+				selectedlist: {}, // 选中的信息
+				slist: [], //add default value here
+			
+				card:"fff",
+
+				searchlist: [],
+				list: []
+			},
+
+
+			created() {
+
+				// this.setSlist(this.list);
+
+				var _self = this;
+
+				request_option("select", null, function(data) {
+					_self.list = data;
+
+					console.log(JSON.stringify(data));
+
+					_self.setSlist(_self.list);
+					
+					
+					_self.search_card(globalvar_card);
+					
+ 
+				});
+
+
+
+
+			},
+			methods: {
+
+
+				// 修改数据
+				showOverlay(item) {
+
+					<!-- this.selected = index; -->
+
+					<!-- this.selected = index; -->
+					this.selectedlist = item;
+					this.changeOverlay();
+					
+					_self.search_card(globalvar_card);
+
+					this.isAddNew = false;
+
+				},
+				// 点击保存按钮
+				modify(value) {
+
+					_self = this;
+
+					console.log(JSON.stringify(value));
+
+					if (this.isAddNew) {
+						console.log("option is  insert");
+						request_option("insert", value, function(data) {
+
+
+
+							_self.list = data;
+
+
+							_self.setSlist(data);
+							_self.changeOverlay();
+							_self.search_card(globalvar_card);
+
+
+						});
+					} else {
+						console.log("option is  update");
+
+						request_option("update", value, function(data) {
+
+							_self.list = data;
+
+							_self.setSlist(data);
+							_self.changeOverlay();
+							_self.search_card(globalvar_card);
+
+						});
+
+					}
+
+
+
+
+				},
+
+
+
+				add: function() {
+					this.selectedlist = {
+						id: '',
+						card: '',
+						jilu: '[反馈]：',
+						time: '',
+					};
+					
+					this.selectedlist.card = globalvar_card ;
+					
+					
+					this.selected = -1;
+					this.isAddNew = true;
+					this.isActive = true;
+		
+					
+				},
+				// delete list in index location
+
+				del(item) {
+
+					console.log(item);
+
+					_self = this;
+
+					request_option("delete", item, function(data) {
+						// _self.resource = data;
+
+						console.log(JSON.stringify(data));
+
+						_self.list = data;
+
+						_self.setSlist(data);
+						
+						_self.search_card(globalvar_card);
+
+					});
+				},
+
+
+
+
+				changeOverlay() {
+					this.isActive = !this.isActive;
+				},
+
+
+
+				// 获取需要渲染到页面中的数据
+				setSlist(arr) {
+					this.slist = JSON.parse(JSON.stringify(arr));
+				},
+
+
+				// 搜索
+				search(e) {
+					var v = e.target.value,
+						self = this;
+
+					self.searchlist = [];
+
+					if (v) {
+						var ss = [];
+						// 过滤需要的数据
+						this.list.forEach(function(item) {
+							if (item.card.indexOf(v) > -1) {
+								if (self.searchlist.indexOf(item.card) == -1) {
+									self.searchlist.push(item.card);
+								}
+								ss.push(item);
+							}
+
+						});
+						this.setSlist(ss); // 将过滤后的数据给了slist
+
+					} else {
+						// 没有搜索内容，则展示全部数据
+						this.setSlist(this.list);
+					}
+				},
+
+
+
+
+				// 搜索
+				search_card(card_value) {
+
+					console.log("+++++++++++++");
+
+					var v = card_value,
+						self = this;
+
+					self.searchlist = [];
+
+					if (v) {
+						var ss = [];
+						// 过滤需要的数据
+						this.list.forEach(function(item) {
+							if (item.card.indexOf(v) > -1) {
+								if (self.searchlist.indexOf(item.card) == -1) {
+									self.searchlist.push(item.card);
+								}
+								ss.push(item);
+							}
+
+						});
+						this.setSlist(ss); // 将过滤后的数据给了slist
+
+					} else {
+						// 没有搜索内容，则展示全部数据
+						this.setSlist(this.list);
+					}
+				}
+
+
+
+			},
+			watch: {}
+		});
+
+
+
+
+
+
+		function shuaxin() {
+
+
+			var temp_card = localStorage.getItem("card");
+			globalvar_card = temp_card;
+
+			if (globalvar_card_last != globalvar_card) {
+
+				app.search_card(globalvar_card);
+
+				globalvar_card_last = globalvar_card;
+			}
+
+		}
+
+		timer_request = setInterval(this.shuaxin, 2000);
+		
+		
+
+		
+		
+	</script>
+
+</html>

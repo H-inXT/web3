@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+
+
+	<style>
+		/* 		body {
+			font: 14px/1.4 Georgia, Serif; 
+		} */
+		[v-cloak] {
+			display: none;
+		}
+	</style>
+
+
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+
+
+		<!-- import CSS -->
+
+		<link rel="stylesheet" href="../js/element-ui/theme-chalk/index.css">
+
+	</head>
+
+
+	<body style="background: #EFEFF4;">
+
+		<div id="app" v-cloak>
+
+
+
+
+			<el-row>
+				<el-col :span="4">
+					<el-button type="primary" icon="el-icon-back" circle onclick="javascript:window.location.href='./main.html'"></el-button>
+				</el-col>
+				<el-col :span="16">
+					<h1 style="text-align: center;">监测控制</h1>
+				</el-col>
+
+			</el-row>
+
+
+
+
+
+			<el-card class="box-card" style="margin-top: 40px;">
+				<!-- 				<div slot="header" class="clearfix" style="text-align: center;">
+					<span>传感器监测</span>
+				</div> -->
+
+				<div>
+					<div v-for="item in value">
+						<div v-if="item.sensor_role=='label'">
+
+							<el-row style="  ;margin: 10px 10px;padding: 8px 8px;">
+								<el-col :span="8">
+									<div class="grid-content bg-purple" style="text-align: right;">{{item.sensor_name}}</div>
+								</el-col>
+								<el-col :span="8">
+									<div class="grid-content bg-purple-light" style="text-align: center;">{{item.sensor_value}}</div>
+								</el-col>
+								<el-col :span="8">
+									<div class="grid-content bg-purple-light" style="text-align: left;">{{item.sensor_note}}</div>
+								</el-col>
+							</el-row>
+
+						</div>
+					</div>
+				</div>
+
+			</el-card>
+
+
+
+	 
+			<iframe src="./xiaofeizhe_zhuisu_manage.html" width="100%" height="1000px" frameborder=0></iframe>
+
+
+			<div style="margin-bottom: 60px;"></div>
+
+
+
+		</div>
+
+	</body>
+
+	<script src="../js/vue.js"></script>
+	<script src="../js/element-ui/index.js"></script>
+	<script src="../js/project_config.js"></script>
+	<script src="../js/jquery-3.4.1.min.js"></script>
+
+	<script>
+		console.log(cfg_sensor_url);
+
+		function request_option(option, data, callback) {
+
+
+			var delete_url = cfg_sensor_url;
+
+			delete_url = delete_url + "?option=" + option + "&data=" + JSON.stringify(data);
+
+			console.log(delete_url);
+
+
+			$.ajax({
+				type: 'get',
+				dataType: "json",
+				url: delete_url,
+				success: function(data) {
+					callback(data);
+				},
+			});
+		}
+
+
+
+		function timer_diff_now(sensor_time) {
+			var date = sensor_time;
+			date = date.substring(0, 19);
+			date = date.replace(/-/g, '/');
+			var timestamp_sensor = new Date(date).getTime() / 1000;
+			var timestamp_now = parseInt(new Date().getTime() / 1000);
+
+			console.log(timestamp_now - timestamp_sensor);
+
+			return (timestamp_now - timestamp_sensor)
+		}
+
+
+
+
+
+		function analyse_frame(context, data) {
+
+			var warning_msg = "";
+			var flag_is_need_msg = false;
+
+			var limit_value_wendu1 = 0;
+			var limit_value_yanwu1 = 0;
+			var limit_value_card ;
+
+			var item_card;
+			var item_timer_end1;
+			var item_jidianqi3;
+
+
+
+			for (let item of data) {
+
+
+				if (item.sensor_type == "card1") {
+					limit_value_card = item.sensor_value
+					localStorage.setItem("card", limit_value_card);
+
+				} else if (item.sensor_type == "limit_yanwu1") {
+					limit_value_yanwu1 = Number(item.sensor_value);
+				} else if (item.sensor_type == "online1") {
+					// if(timer_diff_now(item.sensor_time) > 20)
+					// {
+					// 	warning_msg =warning_msg+"设备1已离线";
+					// 	flag_is_need_msg = true ;
+					// 	// console.log(warning_msg);
+					// }
+				} else if (item.sensor_type == "timer_start1") {
+					item_timer_start1 = item;
+				} else if (item.sensor_type == "timer_end1") {
+					item_timer_end1 = item;
+				} else if (item.sensor_type == "jidianqi3") {
+					item_jidianqi3 = item;
+				}
+
+
+
+			}
+
+
+
+
+			for (let item of data) {
+
+
+				if (item.sensor_type == "wendu1") {
+					var compare_value = Number(item.sensor_value);
+					if (compare_value > limit_value_wendu1) {
+						warning_msg = warning_msg + "温度过高";
+
+						flag_is_need_msg = true;
+					}
+				} else if (item.sensor_type == "yanwu1") {
+					var compare_value = Number(item.sensor_value);
+					if (item.compare_value > limit_value_yanwu1) {
+						warning_msg = warning_msg + " 气体超标";
+
+						flag_is_need_msg = true;
+					}
+				} else if (item.sensor_type == "auto_timer1") {
+
+					if (item.sensor_value == "on") {
+						console.log("启用定时");
+
+						var Date_now = new Date();
+						var time_now = Date_now.getTime();
+
+						if (time_now > Number(item_timer_start1.sensor_value) &&
+							time_now < Number(item_timer_end1.sensor_value)) {
+
+							item_jidianqi3.sensor_value = "on";
+
+						} else {
+
+							item_jidianqi3.sensor_value = "off";
+						}
+
+						context.source_change(item_jidianqi3);
+
+
+						// console.log(item.sensor_value);
+					}
+				}
+			}
+
+
+
+
+			// if(flag_is_need_msg )
+			// {
+			// 	context.$message({
+			// 		message: warning_msg,
+			// 		type: 'warning',
+			// 		center: true
+			// 	});
+			// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+		}
+
+
+
+		new Vue({
+			el: '#app',
+			data: {
+				value: [], //add default value here
+				flag_disable_refresh: false,
+
+			},
+			methods: {
+
+				source_change(item) {
+
+
+					console.log(JSON.stringify(item));
+
+					_self = this;
+
+					request_option("update", item, function(data) {
+
+
+						// _self.show_source(data); //是否立刻刷新数据，不建议
+
+
+					});
+
+
+				},
+
+				show_source(data) {
+					value_temp = [];
+
+					// console.log(JSON.stringify(data));
+
+					for (let item of data) {
+
+
+
+
+						if (item.sensor_role == "slider") {
+							var temp_slider = {
+								id: "",
+								sensor_name: "",
+								sensor_type: "",
+								sensor_value: 0,
+								sensor_role: ""
+							};
+
+
+							temp_slider.id = item.id;
+							temp_slider.sensor_type = item.sensor_type;
+							temp_slider.sensor_name = item.sensor_name;
+							temp_slider.sensor_role = item.sensor_role;
+							temp_slider.sensor_value = parseInt(item.sensor_value);
+
+							value_temp.push(temp_slider);
+
+						} else if (item.sensor_role == "checkbox") {
+							var temp_slider = {
+								id: "",
+								sensor_name: "",
+								sensor_type: "",
+								sensor_value: false,
+								sensor_role: ""
+							};
+
+							temp_slider.id = item.id;
+							temp_slider.sensor_type = item.sensor_type;
+							temp_slider.sensor_name = item.sensor_name;
+							temp_slider.sensor_role = item.sensor_role;
+							temp_slider.sensor_value = Boolean(item.sensor_value);
+
+
+							value_temp.push(temp_slider);
+
+
+						} else {
+							value_temp.push(item);
+
+						}
+
+					}
+
+
+
+					this.value = value_temp;
+
+					analyse_frame(this, data);
+
+				},
+
+				disable_refresh() {
+					this.flag_disable_refresh = true;
+				},
+				enable_refresh() {
+					this.flag_disable_refresh = false;
+				},
+
+
+				refresh() {
+
+					if (this.flag_disable_refresh) {
+						console.log(this.flag_disable_refresh);
+						return;
+					}
+
+					_self = this;
+
+					request_option("select", " ", function(data) {
+
+						_self.show_source(data);
+					});
+
+				}
+
+
+
+			},
+			created() {
+
+				this.show_source(this.value);
+
+				this.refresh();
+
+				timer_request = setInterval(this.refresh, 2000);
+
+			}
+
+		})
+	</script>
+
+
+
+</html>
