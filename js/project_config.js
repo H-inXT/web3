@@ -1,7 +1,7 @@
 
 
  
-var project_server_url = "http://www.xiaotongren.top/student/5049/"
+var project_server_url = "https://www.xiaotongren.top/student/5049/"
 
 //login url
 var cfg_login_url= project_server_url + "login.php" ;
